@@ -1,4 +1,4 @@
 /ssh_key
-/vms/
-/images/
+/vms/*
+/images/*
 
