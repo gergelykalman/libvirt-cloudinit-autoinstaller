@@ -4,6 +4,18 @@ import time
 import libvirt
 
 
+VM_STATES = {
+    0: "nostate",
+    1: "running",
+    2: "blocked",
+    3: "paused",
+    4: "shudown",
+    5: "shutoff",
+    6: "crashed",
+    7: "pmsuspended",
+}
+
+
 class LibvirtWrapper:
     def __init__(self):
         self.__conn = libvirt.open(None)
@@ -47,3 +59,8 @@ class LibvirtWrapper:
     def undefine(self, name):
         dom = self.__conn.lookupByName(name)
         dom.undefine()
+
+    def status(self, name):
+        dom = self.__conn.lookupByName(name)
+        state, _ = dom.state()
+        return VM_STATES[state]

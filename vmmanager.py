@@ -10,9 +10,8 @@ from modules.libvirt_installer import LibvirtWrapper
 from modules.qemu_images import enlarge_image
 
 
-class KVMInstaller:
+class VMManager:
     def __init__(self, basedir):
-        # base_dir = os.path.dirname(__file__)
         base_dir = basedir
         self.__image_dir = os.path.join(base_dir, "images")
         self.__vm_dir = os.path.join(base_dir, "vms")
@@ -40,19 +39,14 @@ class KVMInstaller:
     def install(self, sshkeyfile):
         sshkey = open(sshkeyfile, "rt").read()
 
-        ### START PARAMETERS
-        # To get OSVARIANT: osinfo-query os
-        # NOTE: Only debian10 is supported right now for me, not debian 11
-
         hostname = "test"
-        osvariant = "debian10"
+        osvariant = "debian11"
         base_image = os.path.join(self.__image_dir, "debian-11-generic-amd64.qcow2")
         kvm_param_memory = 2048
         kvm_param_vcpu = 2
         password = "test"
         passwordhash = crypt.crypt(password)
         disk_extrasize = 10*1024*1024*1024
-        ### END PARAMETERS
 
         vm_disk_dir = os.path.join(self.__vm_dir, hostname)
         vm_root = os.path.join(vm_disk_dir, "root.qcow2")
@@ -62,7 +56,7 @@ class KVMInstaller:
             print("VM as {} already exists, aborting!".format(vm_disk_dir))
             exit(1)
 
-        # TODO: copying images
+        print("[+] Preparing images")
         os.makedirs(vm_disk_dir, exist_ok=True)
         shutil.copy(base_image, vm_root)
         enlarge_image(vm_root, disk_extrasize)
@@ -79,9 +73,10 @@ class KVMInstaller:
             vm_name=hostname,
             passwordhash=passwordhash,
             ssh_authorized_keys=sshkey)
+
         generate_cloudinit_iso(meta_data, user_data, vm_cloudconfig)
 
-        # TODO: call virtinstall
+        print("[+] Installing VM")
         self.__lvw.install(
             name=hostname,
             osvariant=osvariant,
@@ -90,8 +85,6 @@ class KVMInstaller:
             diskimg=vm_root,
             cloudconfig_img=vm_cloudconfig,
         )
-
-        # TODO: call virsh console
 
     def uninstall(self):
         name = "test"
@@ -106,20 +99,26 @@ class KVMInstaller:
         vm_disk_dir = os.path.join(self.__vm_dir, name)
         shutil.rmtree(vm_disk_dir)
 
+    def status(self):
+        name = "test"
+        print("{} state: {}".format(name, self.__lvw.status(name)))
+
 
 if __name__ == "__main__":
     basedir = sys.argv[1]
     func = sys.argv[2]
 
-    installer = KVMInstaller(basedir)
+    vmm = VMManager(basedir)
     if func == "download":
         url = "https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2"
         outfilename = "debian-11-generic-amd64.qcow2"
-        installer.download_file(url, outfilename)
+        vmm.download_file(url, outfilename)
     elif func == "install":
-        installer.install("sshkey")
+        vmm.install(".sshkey")
     elif func == "uninstall":
-        installer.uninstall()
+        vmm.uninstall()
+    elif func == "status":
+        vmm.status()
     else:
         print("Invalid func: {}".format(func))
         exit(1)

@@ -5,4 +5,4 @@
 - set resolv.conf properly
 - set up iptables reverse rules so that the instance is accessible
   - in /etc/libvirt/hooks/qemu
-
+- migrate away from using subshells for anything
