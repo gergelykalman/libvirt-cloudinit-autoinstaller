@@ -1,13 +1,13 @@
 import tempfile
 import subprocess
 
-from modules.cloudinit_templates import user_data_tpl, meta_data_tpl
+from modules.cloudinit_templates import kvm_userdata_tpl, kvm_metadata_tpl
 
 
 def generate_cloudinit_configs(hostname, net_iface, net_addr, net_net,
                                net_netmask, net_broadcast, net_gateway,
                                vm_name, passwordhash, ssh_authorized_keys):
-    meta_data = meta_data_tpl.substitute({
+    meta_data = kvm_metadata_tpl.substitute({
         "HOSTNAME": hostname,
         "NET_IFACE": net_iface,
         "NET_ADDR": net_addr,
@@ -17,7 +17,7 @@ def generate_cloudinit_configs(hostname, net_iface, net_addr, net_net,
         "NET_GATEWAY": net_gateway,
     })
 
-    user_data = user_data_tpl.substitute({
+    user_data = kvm_userdata_tpl.substitute({
         "VM_NAME": vm_name,
         "PASSWORDHASH": passwordhash,
         "SSH_AUTHORIZED_KEYS": ssh_authorized_keys,

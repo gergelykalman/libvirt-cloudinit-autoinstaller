@@ -1,6 +1,6 @@
 from string import Template
 
-meta_data_tpl = Template("""local-hostname: $HOSTNAME
+kvm_metadata_tpl = Template("""local-hostname: $HOSTNAME
 network-interfaces: |
     iface $NET_IFACE inet dhcp
     address $NET_ADDR
@@ -9,7 +9,7 @@ network-interfaces: |
     broadcast $NET_BROADCAST
     gateway $NET_GATEWAY""")
 
-user_data_tpl = Template("""cloud-config
+kvm_userdata_tpl = Template("""cloud-config
 hostname: $VM_NAME
 packages:
   - qemu-guest-agent
@@ -23,4 +23,16 @@ ssh_pwauth: no
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
+""")
+
+ec2_userdata_tpl = Template("""#cloud-config
+cloud_final_modules:
+- [users-groups,always]
+users:
+  - name: vmmanager
+    groups: [ wheel ]
+    sudo: [ "ALL=(ALL) NOPASSWD:ALL" ]
+    shell: /bin/bash
+    ssh-authorized-keys: 
+    - $SSH_KEY
 """)
