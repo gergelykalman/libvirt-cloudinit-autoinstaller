@@ -1,2 +1,4 @@
-A couple simple bash scripts to help you bring up VMs with libvirt and cloud-init
+### NOTES
 
+Requires `apt-get install libvirt-dev` on debian to install
+`pip install libvirt-python`.
